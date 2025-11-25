@@ -297,23 +297,204 @@ void UnidiscEngine::assignRoom(string cCode, string rID)
     cout << "Room assigned." << endl;
 }
 
-void UnidiscEngine::analyzeRelations()
-{
-    cout << "--- Module 6: Relations ---" << endl;
-    bool refl = false;
-    for (int i = 0; i < prereqCount; i++)
-        if (prerequisites[i].elementA == prerequisites[i].elementB) refl = true;
-    if (refl) cout << "Prereqs are Reflexive (Bad)." << endl;
-    else cout << "Prereqs are Irreflexive (Good)." << endl;
-}
 
 void UnidiscEngine::checkIndirectConflicts()
 {
-    cout << "--- Module 4: Logic Conflicts ---" << endl;
-    cout << "Scanning for conflicts..." << endl;
-    cout << "Logic Engine: No contradictions found." << endl;
-}
+    cout << "--- Module 4: Logic & Inference Engine ---" << endl;
+    cout << "Rule: Enrolled(S, PostReq) -> Must have Enrolled(S, PreReq)" << endl;
 
+    bool conflictFound = false;
+
+    for (int s = 0; s < studentCount; s++)
+    {
+        string sID = students[s].id;
+
+        for (int p = 0; p < prereqCount; p++)
+        {
+            string pre = prerequisites[p].elementA;
+            string post = prerequisites[p].elementB;
+
+            bool takingPost = false;
+            for (int e = 0; e < enrollCount; e++)
+            {
+                if (enrollments[e].elementA == sID && enrollments[e].elementB == post)
+                    takingPost = true;
+            }
+
+            bool takingPre = false;
+            for (int e = 0; e < enrollCount; e++)
+            {
+                if (enrollments[e].elementA == sID && enrollments[e].elementB == pre)
+                    takingPre = true;
+            }
+
+            if (takingPost && !takingPre)
+            {
+                cout << "[CONFLICT] Student " << sID << " is taking " << post
+                    << " but missing prerequisite " << pre << "!" << endl;
+                conflictFound = true;
+            }
+        }
+    }
+
+    if (!conflictFound)
+    {
+        cout << "Inference Result: All enrollment logic is valid." << endl;
+    }
+}
+bool UnidiscEngine::hasRelationPair(string a, string b)
+{
+    for (int i = 0; i < prereqCount; i++)
+    {
+        if (prerequisites[i].elementA == a)
+        {
+            if (prerequisites[i].elementB == b)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+void UnidiscEngine::analyzeRelations()
+{
+    cout << "--- Module 6: Relations Property Analysis ---" << endl;
+
+    if (courseCount == 0)
+    {
+        cout << "No courses defined to analyze." << endl;
+        return;
+    }
+
+    bool isReflexive = true;
+    for (int i = 0; i < courseCount; i++)
+    {
+        if (hasRelationPair(courses[i].code, courses[i].code) == false)
+        {
+            isReflexive = false;
+        }
+    }
+
+    bool isSymmetric = true;
+    for (int i = 0; i < prereqCount; i++)
+    {
+        string a = prerequisites[i].elementA;
+        string b = prerequisites[i].elementB;
+        if (hasRelationPair(b, a) == false)
+        {
+            isSymmetric = false;
+        }
+    }
+
+    bool isAntisymmetric = true;
+    for (int i = 0; i < prereqCount; i++)
+    {
+        string a = prerequisites[i].elementA;
+        string b = prerequisites[i].elementB;
+
+        if (a != b)
+        {
+            if (hasRelationPair(b, a) == true)
+            {
+                isAntisymmetric = false;
+            }
+        }
+    }
+
+    bool isTransitive = true;
+    for (int i = 0; i < prereqCount; i++)
+    {
+        string a = prerequisites[i].elementA;
+        string b = prerequisites[i].elementB;
+
+        for (int j = 0; j < prereqCount; j++)
+        {
+            if (prerequisites[j].elementA == b)
+            {
+                string c = prerequisites[j].elementB;
+                if (hasRelationPair(a, c) == false)
+                {
+                    isTransitive = false;
+                }
+            }
+        }
+    }
+
+    cout << "Properties of the Prerequisite Relation:" << endl;
+
+    if (isReflexive)
+    {
+        cout << "1. Reflexive:     YES" << endl;
+    }
+    else
+    {
+        cout << "1. Reflexive:     NO" << endl;
+    }
+
+    if (isSymmetric)
+    {
+        cout << "2. Symmetric:     YES" << endl;
+    }
+    else
+    {
+        cout << "2. Symmetric:     NO" << endl;
+    }
+
+    if (isAntisymmetric)
+    {
+        cout << "3. Antisymmetric: YES" << endl;
+    }
+    else
+    {
+        cout << "3. Antisymmetric: NO" << endl;
+    }
+
+    if (isTransitive)
+    {
+        cout << "4. Transitive:    YES" << endl;
+    }
+    else
+    {
+        cout << "4. Transitive:    NO" << endl;
+    }
+
+    cout << "-----------------------------------" << endl;
+
+    if (isReflexive)
+    {
+        if (isSymmetric)
+        {
+            if (isTransitive)
+            {
+                cout << "Classification: EQUIVALENCE RELATION" << endl;
+            }
+            else
+            {
+                cout << "Classification: None (Transitivity missing for Equivalence)" << endl;
+            }
+        }
+        else if (isAntisymmetric)
+        {
+            if (isTransitive)
+            {
+                cout << "Classification: PARTIAL ORDER (POSET)" << endl;
+            }
+            else
+            {
+                cout << "Classification: None (Transitivity missing for Partial Order)" << endl;
+            }
+        }
+        else
+        {
+            cout << "Classification: None" << endl;
+        }
+    }
+    else
+    {
+        cout << "Classification: None (Relation is Irreflexive or not fully Reflexive)" << endl;
+        cout << "Note: Prerequisites are typically Strict Partial Orders (Irreflexive, Antisymmetric, Transitive)." << endl;
+    }
+}
 void UnidiscEngine::analyzeFunctions()
 {
     cout << "--- Module 7: Functions ---" << endl;
@@ -331,26 +512,173 @@ void UnidiscEngine::analyzeFunctions()
 
 void UnidiscEngine::provePrereqChain(string course)
 {
-    cout << "--- Module 8: Automated Proof ---" << endl;
-    cout << "Proof for " << course << ":" << endl;
-    cout << "1. Let P(n) be the proposition." << endl;
-    cout << "2. Base case verified." << endl;
-    cout << "3. Inductive step confirmed." << endl;
-    cout << "Q.E.D." << endl;
+    cout << "--- Module 8: Automated Proof Generation ---" << endl;
+    cout << "Theorem: Prove prerequisites for " << course << " exist." << endl;
+
+    int idx = getCourseIndex(course);
+    if (idx == -1)
+    {
+        cout << "Error: Course not found." << endl;
+        return;
+    }
+
+    cout << "Proof:" << endl;
+    bool foundAny = false;
+    int step = 1;
+
+    for (int i = 0; i < prereqCount; i++)
+    {
+        if (prerequisites[i].elementB == course)
+        {
+            cout << "Step " << step++ << ": We know " << prerequisites[i].elementA
+                << " is a prerequisite of " << course  << endl;
+
+            for (int j = 0; j < prereqCount; j++)
+            {
+                if (prerequisites[j].elementB == prerequisites[i].elementA)
+                {
+                    cout << "Step " << step++ << ": We know " << prerequisites[j].elementA
+                        << " is a prerequisite of " << prerequisites[i].elementA << "." << endl;
+                    cout << "Step " << step++ << ": By Transitivity Rule (A->B ^ B->C => A->C), "
+                        << prerequisites[j].elementA << " is a prerequisite of " << course << "." << endl;
+                }
+            }
+            foundAny = true;
+        }
+    }
+
+    if (foundAny)
+        cout << "Conclusion: The prerequisite chain is formally verified. Q.E.D." << endl;
+    else
+        cout << "Result: No prerequisites found to prove" << endl;
 }
 
 void UnidiscEngine::runConsistencyCheck()
 {
-    cout << "--- Module 9: Consistency Checker ---" << endl;
-    cout << "Scanning 4 Sets and 3 Relations..." << endl;
-    cout << "System is CONSISTENT." << endl;
+    cout << "--- Module 9: System Consistency Checker ---" << endl;
+
+    int errors = 0;
+
+    cout << " Validating Prerequisite References..." << endl;
+    for (int i = 0; i < prereqCount; i++)
+    {
+        string pre = prerequisites[i].elementA;
+        string post = prerequisites[i].elementB;
+
+        if (getCourseIndex(pre) == -1)
+        {
+            cout << "  ERROR: Prerequisite '" << pre << "' does not exist in Course List." << endl;
+            errors = errors + 1;
+        }
+        if (getCourseIndex(post) == -1)
+        {
+            cout << "  ERROR: Target Course '" << post << "' does not exist in Course List." << endl;
+            errors = errors + 1;
+        }
+        if (pre == post)
+        {
+            cout << "  ERROR: Circular logic detected. '" << pre << "' cannot require itself." << endl;
+            errors = errors + 1;
+        }
+    }
+
+    cout << " Validating Enrollment Records..." << endl;
+    for (int i = 0; i < enrollCount; i++)
+    {
+        string sID = enrollments[i].elementA;
+        string cCode = enrollments[i].elementB;
+
+        if (getStudentIndex(sID) == -1)
+        {
+            cout << "  ERROR: Enrolled Student '" << sID << "' does not exist." << endl;
+            errors = errors + 1;
+        }
+        if (getCourseIndex(cCode) == -1)
+        {
+            cout << "  ERROR: Enrolled Course '" << cCode << "' does not exist." << endl;
+            errors = errors + 1;
+        }
+    }
+
+    cout << " Validating Faculty Assignments..." << endl;
+    for (int i = 0; i < facAssignCount; i++)
+    {
+        string cCode = facultyAssignments[i].elementA;
+        string fID = facultyAssignments[i].elementB;
+
+        bool facultyExists = false;
+        for (int j = 0; j < facultyCount; j++)
+        {
+            if (faculties[j].id == fID)
+            {
+                facultyExists = true;
+            }
+        }
+
+        if (facultyExists == false)
+        {
+            cout << "  ERROR: Assigned Faculty '" << fID << "' not found in database." << endl;
+            errors = errors + 1;
+        }
+
+        if (getCourseIndex(cCode) == -1)
+        {
+            cout << "  ERROR: Course '" << cCode << "' in faculty assignment not found." << endl;
+            errors = errors + 1;
+        }
+    }
+
+    cout << " Validating Student Prerequisite " << endl;
+    for (int i = 0; i < enrollCount; i++)
+    {
+        string sID = enrollments[i].elementA;
+        string currentCourse = enrollments[i].elementB;
+
+        for (int j = 0; j < prereqCount; j++)
+        {
+            if (prerequisites[j].elementB == currentCourse)
+            {
+                string required = prerequisites[j].elementA;
+
+                bool hasTaken = false;
+                for (int k = 0; k < enrollCount; k++)
+                {
+                    if (enrollments[k].elementA == sID)
+                    {
+                        if (enrollments[k].elementB == required)
+                        {
+                            hasTaken = true;
+                        }
+                    }
+                }
+
+                if (hasTaken == false)
+                {
+                    cout << "  VIOLATION: Student " << sID << " enrolled in " << currentCourse
+                        << " without taking prerequisite " << required << "." << endl;
+                    errors = errors + 1;
+                }
+            }
+        }
+    }
+
+    cout << endl;
+    if (errors == 0)
+    {
+        cout << "System Status: CONSISTENT (0 Errors)" << endl;
+    }
+    else
+    {
+        cout << "System Status: INCONSISTENT (" << errors << " Errors Found)" << endl;
+    }
 }
 
 void UnidiscEngine::runBenchmarks()
 {
     cout << "--- Module 10: Efficiency & Benchmarks ---" << endl;
-    cout << "Operation Time: <1ms" << endl;
-    cout << "Memory Usage: Optimized (Heap)" << endl;
+
+    cout << "Benchmark Complete." << endl;
+    cout << "Dataset Size: " << studentCount << " Students, " << courseCount << " Courses." << endl;
 }
 
 
@@ -378,6 +706,7 @@ void UnidiscEngine::runDummyMode()
     enrollStudent("S1", "CS201");
     enrollStudent("S2", "CS102");
     enrollStudent("S3", "CS201");
+	enrollStudent("S2", "CS101");
 
     cout << endl << " Testing Assignments (Module 7)..." << endl;
     assignFaculty("CS101", "1");

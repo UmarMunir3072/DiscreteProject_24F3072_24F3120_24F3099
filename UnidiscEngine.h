@@ -87,6 +87,8 @@ private:
     int factorial(int n);
     bool verifyPrereqChainRecursive(string targetCourse, int depth);
 
+    bool hasRelationPair(string a, string b);
+
 public:
     UnidiscEngine();
     ~UnidiscEngine();
