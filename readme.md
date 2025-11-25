@@ -3,7 +3,7 @@ Fast University Management System:
 At FAST University, managing courses, prerequisites, student enrollment, faculty assignments, and resources involves complex dependencies and rules. This project creates a high-level computational framework that models FAST University’s operations using discrete structures, enforcing rules and verifying correctness
 
 
-24F-3099 (Modules 1-4)
+24F-3120 (Modules 1-4)
    
        Module 1: Course Permutation & Scheduling
            - void addPrerequisite(string pre, string post)
@@ -42,7 +42,7 @@ At FAST University, managing courses, prerequisites, student enrollment, faculty
 
 
 
-24F-3120 (Modules 5-8)
+24F-3099 (Modules 5-8)
 
        Module 5: Set Operations
            - void enrollStudent(string sID, string cID)
