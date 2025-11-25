@@ -114,6 +114,8 @@ public:
     void provePrereqChain(string course);
     void runConsistencyCheck();
     void runBenchmarks();
+
+    void runDummyMode();
 };
 
 #endif
